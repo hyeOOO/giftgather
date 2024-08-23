@@ -4,5 +4,5 @@ import com.project.giftgather.project.domain.Category;
 import com.project.giftgather.project.domain.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CategoryRepository extends JpaRepository<Category, String> {
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 }

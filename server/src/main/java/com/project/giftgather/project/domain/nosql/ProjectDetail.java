@@ -1,14 +1,17 @@
 package com.project.giftgather.project.domain.nosql;
 
+import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 @Document(collection = "project_detail")
-@Getter
+@Getter @Setter
 public class ProjectDetail {
 
     @Id
@@ -39,12 +42,17 @@ public class ProjectDetail {
         // Getters and Setters
     }
 
+    @Data
     public static class Document {
         private String name;
         private String url;
-
-        // Getters and Setters
     }
 
-    // Getters and Setters for ProjectDetail
+    //==생성 메서드==//
+    public static ProjectDetail createProjectDetail(String projectId, List<ProjectDetail.Document> documents) {
+        ProjectDetail projectDetail = new ProjectDetail();
+        projectDetail.projectId = projectId;
+        projectDetail.documents = documents != null ? documents : new ArrayList<>();
+        return projectDetail;
+    }
 }

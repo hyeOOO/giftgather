@@ -12,6 +12,8 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -52,6 +54,9 @@ public class Project {
 
     private boolean reviewApproval;
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CategoryMapping> categoryMappings = new ArrayList<>();
+
     //==생성 메서드==//
     public static Project createProject(Maker maker) {
         Project project = new Project();
@@ -72,5 +77,12 @@ public class Project {
         if (maker != null) {
             maker.getProjects().add(this);
         }
+    }
+
+    public void addCategory(Category category) {
+        CategoryMapping categoryMapping = new CategoryMapping();
+        categoryMapping.setCategory(category);
+        categoryMapping.setProject(this);  // 양방향 연관 관계 설정
+        this.categoryMappings.add(categoryMapping);
     }
 }

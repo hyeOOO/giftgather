@@ -1,8 +1,14 @@
 package com.project.giftgather.project.service;
 
 
+import com.project.giftgather.project.domain.Category;
+import com.project.giftgather.project.domain.CategoryMapping;
 import com.project.giftgather.project.domain.Project;
+import com.project.giftgather.project.domain.nosql.ProjectDetail;
 import com.project.giftgather.project.dto.ProjectDTO;
+import com.project.giftgather.project.dto.ProjectDocumentDTO;
+import com.project.giftgather.project.dto.ProjectUpdateRequest;
+import com.project.giftgather.project.repository.CategoryRepository;
 import com.project.giftgather.project.repository.ProjectDetailRepository;
 import com.project.giftgather.project.repository.ProjectRepository;
 import com.project.giftgather.project.repository.ProjectRepositoryCustom;
@@ -15,8 +21,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -29,6 +38,7 @@ public class ProjectService {
     private final ProjectDetailRepository projectDetailRepository;
     private final MakerRepository makerRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
     /**
      * 프로젝트 생성
@@ -60,6 +70,47 @@ public class ProjectService {
     }
 
     //프로젝트 각 페이지 마다의 업데이트
+    //프로젝트 정보 페이지 저장
+    @Transactional
+    public ProjectDTO updateProjectInfo(String projectId, ProjectUpdateRequest updateRequest) {
+        //1. RDBMS에서 프로젝트를 찾아 수정
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new IllegalArgumentException("프로젝트 아이디로 프로젝트를 찾을 수 없습니다. " + projectId));
+        project.setTitle(updateRequest.getTitle());
+        project.setGoalAmount(updateRequest.getGoalAmount());
+
+        //2. 카테고리 설정
+        Category category = categoryRepository.findById(updateRequest.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("카테고리 아이디로 카테고리를 찾을 수 없습니다. " + updateRequest.getCategoryId()));
+
+        //프로젝트의 카테고리 저장
+        project.addCategory(category);
+
+        //프로젝트 저장
+        projectRepository.save(project);
+
+        //3. MongoDB에서 프로젝트 상세 정보를 수정 (혹은 생성)
+        Optional<ProjectDetail> optionalProjectDetail = projectDetailRepository.findByProjectId(projectId);
+        ProjectDetail projectDetail;
+
+        if (optionalProjectDetail.isPresent()) {
+            projectDetail = optionalProjectDetail.get();
+        } else {
+            List<ProjectDetail.Document> updatedDocuments = updateRequest.getDocuments().stream()
+                    .map(doc -> {
+                        ProjectDetail.Document document = new ProjectDetail.Document();
+                        document.setName(doc.getDocumentName());  // ProjectDocumentDTO의 필드 이름과 일치하도록 수정
+                        document.setUrl(doc.getDocumentUrl());
+                        return document;
+                    }).collect(Collectors.toList());
+
+            projectDetail = ProjectDetail.createProjectDetail(projectId, updatedDocuments);
+        }
+
+        projectDetailRepository.save(projectDetail);
+
+        // 4. 변경된 내용을 DTO로 반환
+        return ProjectDTO.fromEntity(project);
+    }
 
     //리워드
 
