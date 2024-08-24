@@ -7,7 +7,6 @@ import java.util.List;
 
 @Data
 public class ProjectUpdateRequest {
-    private String title;
     private Long categoryId;
     private BigDecimal goalAmount;
     private List<ProjectDocumentDTO> documents;

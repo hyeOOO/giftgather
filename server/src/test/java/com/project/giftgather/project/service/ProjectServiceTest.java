@@ -5,6 +5,7 @@ import com.project.giftgather.project.domain.CategoryMapping;
 import com.project.giftgather.project.domain.Project;
 import com.project.giftgather.project.domain.nosql.ProjectDetail;
 import com.project.giftgather.project.dto.ProjectDTO;
+import com.project.giftgather.project.dto.ProjectDetailDTO;
 import com.project.giftgather.project.dto.ProjectDocumentDTO;
 import com.project.giftgather.project.dto.ProjectUpdateRequest;
 import com.project.giftgather.project.repository.CategoryMappingRepository;
@@ -54,16 +55,18 @@ class ProjectServiceTest {
         //when
         Project projectById = projectRepository.findById(project.getProjectId())
                 .orElseThrow(() -> new AssertionError("Project not found"));
+        ProjectDetail projectDetail = projectDetailRepository.findByProjectId(project.getProjectId())
+                .orElseThrow(() -> new AssertionError("Project not found"));
 
         //then
         assertThat(project.getProjectId()).isEqualTo(projectById.getProjectId());
+        assertThat(project.getProjectDetail().getProjectId()).isEqualTo(projectDetail.getProjectId());
     }
 
     @Test
     void 프로젝트_정보_업데이트() {
         //given
         ProjectDTO project = projectService.createProject();
-        String originalTitle = "Original Title";
         em.flush(); //DB에 데이터 강제 반영
         em.clear(); // 영속성 컨텍스트 초기화
 
@@ -82,7 +85,6 @@ class ProjectServiceTest {
         BigDecimal updatedGoalAmount = new BigDecimal("5000");
 
         ProjectUpdateRequest updateRequest = new ProjectUpdateRequest();
-        updateRequest.setTitle(updatedTitle);
         updateRequest.setGoalAmount(updatedGoalAmount);
         updateRequest.setCategoryId(category.getCategoryId());
         updateRequest.setDocuments(documentDTOS);

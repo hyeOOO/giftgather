@@ -29,6 +29,7 @@ public class ProjectDTO {
     private String representativeImage;
     private boolean reviewApproval;
 
+    private ProjectDetailDTO projectDetail;
     private MakerDTO maker;
     private List<ProjectRewardDTO> projectRewards;
     private List<ProjectWishDTO> projectWishes;
@@ -37,7 +38,7 @@ public class ProjectDTO {
     private List<CommentDTO> comments;
 
     // 엔티티 -> DTO 변환 메서드
-    public static ProjectDTO fromEntity(Project project) {
+    public static ProjectDTO fromEntity(Project project, ProjectDetailDTO projectDetailDTO) {
         ProjectDTO dto = new ProjectDTO();
         dto.setProjectId(project.getProjectId());
         dto.setProjectNumber(project.getProjectNumber());
@@ -50,6 +51,8 @@ public class ProjectDTO {
         dto.setProjectStatus(project.getProjectStatus());
         dto.setRepresentativeImage(project.getRepresentativeImage());
         dto.setReviewApproval(project.isReviewApproval());
+
+        dto.setProjectDetail(projectDetailDTO);
 
         return dto;
     }
