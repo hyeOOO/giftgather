@@ -5,9 +5,7 @@ import com.project.giftgather.project.domain.Category;
 import com.project.giftgather.project.domain.CategoryMapping;
 import com.project.giftgather.project.domain.Project;
 import com.project.giftgather.project.domain.nosql.ProjectDetail;
-import com.project.giftgather.project.dto.ProjectDTO;
-import com.project.giftgather.project.dto.ProjectDocumentDTO;
-import com.project.giftgather.project.dto.ProjectUpdateRequest;
+import com.project.giftgather.project.dto.*;
 import com.project.giftgather.project.repository.CategoryRepository;
 import com.project.giftgather.project.repository.ProjectDetailRepository;
 import com.project.giftgather.project.repository.ProjectRepository;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -62,11 +61,16 @@ public class ProjectService {
         project.setProjectNumber(newProjectNumber);
         log.info("createdProject={}", project.toString());
 
+        // ProjectDetail 간단히 생성 (프로젝트 ID만 설정)
+        ProjectDetail projectDetail = ProjectDetail.createProjectDetail(project.getProjectId());
+        projectDetailRepository.save(projectDetail);
+
         //Project 저장
         Project savedProject = projectRepository.save(project);
         log.info("savedProject={}", savedProject.toString());
+        log.info("savecProjectDetatil={}", projectDetail.toString());
 
-        return ProjectDTO.fromEntity(project);
+        return ProjectDTO.fromEntity(project, ProjectDetailDTO.convertToProjectDetailDTO(projectDetail));
     }
 
     //프로젝트 각 페이지 마다의 업데이트
@@ -75,8 +79,8 @@ public class ProjectService {
     public ProjectDTO updateProjectInfo(String projectId, ProjectUpdateRequest updateRequest) {
         //1. RDBMS에서 프로젝트를 찾아 수정
         Project project = projectRepository.findById(projectId).orElseThrow(() -> new IllegalArgumentException("프로젝트 아이디로 프로젝트를 찾을 수 없습니다. " + projectId));
-        project.setTitle(updateRequest.getTitle());
         project.setGoalAmount(updateRequest.getGoalAmount());
+        project.setUpdatedAt(LocalDateTime.now());
 
         //2. 카테고리 설정
         Category category = categoryRepository.findById(updateRequest.getCategoryId())
@@ -103,13 +107,43 @@ public class ProjectService {
                         return document;
                     }).collect(Collectors.toList());
 
-            projectDetail = ProjectDetail.createProjectDetail(projectId, updatedDocuments);
+            projectDetail = ProjectDetail.createProjectDetail(projectId);
         }
 
         projectDetailRepository.save(projectDetail);
 
         // 4. 변경된 내용을 DTO로 반환
-        return ProjectDTO.fromEntity(project);
+        return ProjectDTO.fromEntity(project, ProjectDetailDTO.convertToProjectDetailDTO(projectDetail));
+    }
+
+    //프로젝트 스토리 작성
+    public ProjectDTO updateProjectStory(String projectId, ProjectStoryRequest storyRequest) {
+        //1. RDBMS에서 프로젝트를 찾아 수정
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new IllegalArgumentException("프로젝트 아이디로 프로젝트를 찾을 수 없습니다. " + projectId));
+        project.setTitle(storyRequest.getTitle());
+        project.setDescription(storyRequest.getDescription());
+        project.setUpdatedAt(LocalDateTime.now());
+        project.setRepresentativeImage(storyRequest.getRepresentativeImage());
+        project.setReviewApproval(storyRequest.isReviewApproval());
+
+        //프로젝트 저장
+        projectRepository.save(project);
+
+        //2. MongoDB에서 프로젝트 상세 정보를 수정 (혹은 생성)
+        Optional<ProjectDetail> optionalProjectDetail = projectDetailRepository.findByProjectId(projectId);
+        ProjectDetail projectDetail;
+
+        if (optionalProjectDetail.isPresent()) {
+            projectDetail = optionalProjectDetail.get();
+        } else {
+
+        }
+
+        //projectDetailRepository.save(projectDetail);
+
+        // 3. 변경된 내용을 DTO로 반환
+        //return ProjectDTO.fromEntity(project);
+        return new ProjectDTO();
     }
 
     //리워드

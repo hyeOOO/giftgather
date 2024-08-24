@@ -6,6 +6,7 @@ import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,7 @@ public class ProjectDetail {
     private List<Document> documents;
 
     // Inner classes for embedded documents
+    @Getter @Setter
     public static class IntroductionMedia {
         private String type;
         private String url;
@@ -32,12 +34,13 @@ public class ProjectDetail {
         // Getters and Setters
     }
 
+    @Getter @Setter
     public static class Update {
         private String title;
         private String content;
         private List<String> images;
-        private Date createdAt;
-        private Date updatedAt;
+        private LocalDateTime createdAt;
+        private LocalDateTime updatedAt;
 
         // Getters and Setters
     }
@@ -49,10 +52,10 @@ public class ProjectDetail {
     }
 
     //==생성 메서드==//
-    public static ProjectDetail createProjectDetail(String projectId, List<ProjectDetail.Document> documents) {
+    public static ProjectDetail createProjectDetail(String projectId) {
         ProjectDetail projectDetail = new ProjectDetail();
-        projectDetail.projectId = projectId;
-        projectDetail.documents = documents != null ? documents : new ArrayList<>();
+        projectDetail.setProjectId(projectId);
+        // 필요시 다른 필드 초기화
         return projectDetail;
     }
 }
