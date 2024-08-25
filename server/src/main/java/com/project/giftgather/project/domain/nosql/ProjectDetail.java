@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-@Document(collection = "project_detail")
+@Document(collection = "project_details")
 @Getter @Setter
 public class ProjectDetail {
 
@@ -39,8 +39,8 @@ public class ProjectDetail {
         private String title;
         private String content;
         private List<String> images;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private Date createdAt;
+        private Date updatedAt;
 
         // Getters and Setters
     }

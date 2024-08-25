@@ -4,10 +4,7 @@ import com.project.giftgather.project.domain.Category;
 import com.project.giftgather.project.domain.CategoryMapping;
 import com.project.giftgather.project.domain.Project;
 import com.project.giftgather.project.domain.nosql.ProjectDetail;
-import com.project.giftgather.project.dto.ProjectDTO;
-import com.project.giftgather.project.dto.ProjectDetailDTO;
-import com.project.giftgather.project.dto.ProjectDocumentDTO;
-import com.project.giftgather.project.dto.ProjectUpdateRequest;
+import com.project.giftgather.project.dto.*;
 import com.project.giftgather.project.repository.CategoryMappingRepository;
 import com.project.giftgather.project.repository.CategoryRepository;
 import com.project.giftgather.project.repository.ProjectDetailRepository;
@@ -81,7 +78,6 @@ class ProjectServiceTest {
         );
 
         //when
-        String updatedTitle = "Updated Project Title";
         BigDecimal updatedGoalAmount = new BigDecimal("5000");
 
         ProjectUpdateRequest updateRequest = new ProjectUpdateRequest();
@@ -96,7 +92,6 @@ class ProjectServiceTest {
                 .orElseThrow(() -> new AssertionError("프로젝트를 찾을 수 없습니다. "));
 
         //프로젝트 기본 정보 검증
-        assertThat(projectById.getTitle()).isEqualTo(updatedProject.getTitle());
         assertThat(projectById.getGoalAmount()).isEqualTo(updatedProject.getGoalAmount());
 
         //카테고리 검증
@@ -111,5 +106,48 @@ class ProjectServiceTest {
         Assertions.assertThat(projectDetail.get().getDocuments().size()).isEqualTo(2);
         Assertions.assertThat(projectDetail.get().getDocuments().get(0).getName()).isEqualTo("Document 1");
         Assertions.assertThat(projectDetail.get().getDocuments().get(0).getUrl()).isEqualTo("http://example.com/doc1");
+    }
+
+    @Test
+    void 프로젝트_스토리_업데이트() {
+        // Given: 프로젝트와 ProjectDetail 생성
+        ProjectDTO project = projectService.createProject();
+        em.flush(); // DB에 데이터 강제 반영
+        em.clear(); // 영속성 컨텍스트 초기화
+
+        // When: 프로젝트 스토리 업데이트
+        String updatedTitle = "Updated Project Title";
+        String updatedDescription = "Updated Project Description";
+        String updatedImageUrl = "http://example.com/new_image.jpg";
+        boolean reviewApproval = true;
+        String updatedStory = "Updated Project Story";
+        String introductionMediaType = "video";
+        String introductionMediaUrl = "http://example.com/new_video.mp4";
+
+        ProjectStoryRequest storyRequest = new ProjectStoryRequest();
+        storyRequest.setTitle(updatedTitle);
+        storyRequest.setDescription(updatedDescription);
+        storyRequest.setRepresentativeImage(updatedImageUrl);
+        storyRequest.setReviewApproval(reviewApproval);
+        storyRequest.setStory(updatedStory);
+        storyRequest.setType(introductionMediaType);
+        storyRequest.setFile(introductionMediaUrl);
+
+        ProjectDTO updatedProject = projectService.updateProjectStory(project.getProjectId(), storyRequest);
+
+        // Then: 업데이트된 프로젝트와 프로젝트 디테일 검증
+        Project projectById = projectRepository.findById(project.getProjectId())
+                .orElseThrow(() -> new AssertionError("프로젝트를 찾을 수 없습니다."));
+        assertThat(projectById.getTitle()).isEqualTo(updatedTitle);
+        assertThat(projectById.getDescription()).isEqualTo(updatedDescription);
+        assertThat(projectById.getRepresentativeImage()).isEqualTo(updatedImageUrl);
+        assertThat(projectById.isReviewApproval()).isEqualTo(reviewApproval);
+
+        Optional<ProjectDetail> projectDetailOpt = projectDetailRepository.findByProjectId(project.getProjectId());
+        Assertions.assertThat(projectDetailOpt).isPresent();
+        ProjectDetail projectDetail = projectDetailOpt.get();
+        assertThat(projectDetail.getStory()).isEqualTo(updatedStory);
+        assertThat(projectDetail.getIntroductionMedia().getType()).isEqualTo(introductionMediaType);
+        assertThat(projectDetail.getIntroductionMedia().getUrl()).isEqualTo(introductionMediaUrl);
     }
 }
