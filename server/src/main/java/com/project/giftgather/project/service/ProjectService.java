@@ -92,23 +92,22 @@ public class ProjectService {
         //프로젝트 저장
         projectRepository.save(project);
 
-        //3. MongoDB에서 프로젝트 상세 정보를 수정 (혹은 생성)
-        Optional<ProjectDetail> optionalProjectDetail = projectDetailRepository.findByProjectId(projectId);
-        ProjectDetail projectDetail;
+        //3. MongoDB에서 프로젝트 상세 정보를 수정
+        ProjectDetail projectDetail = projectDetailRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트 상세 정보를 찾을 수 없습니다. " + projectId));
 
-        if (optionalProjectDetail.isPresent()) {
-            projectDetail = optionalProjectDetail.get();
-        } else {
-            List<ProjectDetail.Document> updatedDocuments = updateRequest.getDocuments().stream()
-                    .map(doc -> {
-                        ProjectDetail.Document document = new ProjectDetail.Document();
-                        document.setName(doc.getDocumentName());  // ProjectDocumentDTO의 필드 이름과 일치하도록 수정
-                        document.setUrl(doc.getDocumentUrl());
-                        return document;
-                    }).collect(Collectors.toList());
+        //파일처리가 필요한가?
+        // 여기서 필요한 필드만 업데이트
+        List<ProjectDetail.Document> updatedDocuments = updateRequest.getDocuments().stream()
+                .map(doc -> {
+                    ProjectDetail.Document document = new ProjectDetail.Document();
+                    document.setName(doc.getDocumentName());  // ProjectDocumentDTO의 필드 이름과 일치하도록 수정
+                    document.setUrl(doc.getDocumentUrl());
+                    return document;
+                }).collect(Collectors.toList());
 
-            projectDetail = ProjectDetail.createProjectDetail(projectId);
-        }
+        projectDetail.setDocuments(updatedDocuments);
+        //추가적으로 필요하면 여기 추가
 
         projectDetailRepository.save(projectDetail);
 
@@ -129,21 +128,28 @@ public class ProjectService {
         //프로젝트 저장
         projectRepository.save(project);
 
-        //2. MongoDB에서 프로젝트 상세 정보를 수정 (혹은 생성)
-        Optional<ProjectDetail> optionalProjectDetail = projectDetailRepository.findByProjectId(projectId);
-        ProjectDetail projectDetail;
+        // 2. MongoDB에서 프로젝트 상세 정보를 수정
+        ProjectDetail projectDetail = projectDetailRepository.findByProjectId(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("프로젝트 상세 정보를 찾을 수 없습니다. " + projectId));
 
-        if (optionalProjectDetail.isPresent()) {
-            projectDetail = optionalProjectDetail.get();
-        } else {
+        // 필요시 projectDetail 업데이트
+        projectDetail.setStory(storyRequest.getStory());
 
+        // 3. IntroductionMedia 수정 또는 생성
+        ProjectDetail.IntroductionMedia introductionMedia = projectDetail.getIntroductionMedia();
+        if (introductionMedia == null) {
+            introductionMedia = new ProjectDetail.IntroductionMedia();
+            projectDetail.setIntroductionMedia(introductionMedia);
         }
 
-        //projectDetailRepository.save(projectDetail);
+        introductionMedia.setType(storyRequest.getType()); // 요청으로부터 타입 가져오기
+        introductionMedia.setUrl(storyRequest.getFile());   // 요청으로부터 URL 가져오기
 
-        // 3. 변경된 내용을 DTO로 반환
-        //return ProjectDTO.fromEntity(project);
-        return new ProjectDTO();
+        // 4. ProjectDetail 저장
+        projectDetailRepository.save(projectDetail);
+
+        // 5. 변경된 내용을 DTO로 반환
+        return ProjectDTO.fromEntity(project, ProjectDetailDTO.convertToProjectDetailDTO(projectDetail));
     }
 
     //리워드

@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,8 +77,8 @@ public class ProjectDetailDTO {
                             update.getTitle(),
                             update.getContent(),
                             update.getImages(),
-                            update.getCreatedAt(),
-                            update.getUpdatedAt()
+                            convertToLocalDateTime(update.getCreatedAt()),  // Date -> LocalDateTime 변환
+                            convertToLocalDateTime(update.getUpdatedAt())   // Date -> LocalDateTime 변환
                     ))
                     .collect(Collectors.toList()));
         }
@@ -94,5 +96,9 @@ public class ProjectDetailDTO {
         }
 
         return dto;
+    }
+
+    private static LocalDateTime convertToLocalDateTime(Date date) {
+        return date == null ? null : date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
     }
 }
