@@ -1,4 +1,4 @@
-package com.project.giftgather.config;
+package com.project.giftgather.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

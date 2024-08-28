@@ -1,11 +1,13 @@
 package com.project.giftgather.project.domain;
 
+import com.project.giftgather.project.dto.ProjectRewardDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "project_rewards")
@@ -30,4 +32,18 @@ public class ProjectReward {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    //== 생성 메서드 ==//
+    public static ProjectReward createReward(Project project, ProjectRewardDTO rewardDTO) {
+        ProjectReward reward = new ProjectReward();
+        reward.rewardId = UUID.randomUUID().toString();
+        reward.project = project;
+        reward.description = rewardDTO.getDescription();
+        reward.amount = rewardDTO.getAmount();
+        reward.quantity = rewardDTO.getQuantity();
+        reward.deliveryDate = rewardDTO.getDeliveryDate();
+        reward.createdAt = LocalDateTime.now();
+        reward.updatedAt = LocalDateTime.now();
+        return reward;
+    }
 }
