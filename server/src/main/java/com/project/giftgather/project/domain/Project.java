@@ -23,6 +23,7 @@ import java.util.UUID;
 public class Project {
 
     @Id
+    @Column(name = "project_id")
     private String projectId;
 
     @Column(unique = true)

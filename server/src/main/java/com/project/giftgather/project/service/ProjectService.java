@@ -152,7 +152,5 @@ public class ProjectService {
         return ProjectDTO.fromEntity(project, ProjectDetailDTO.convertToProjectDetailDTO(projectDetail));
     }
 
-    //리워드
-
     //제출 문서 저장
 }
