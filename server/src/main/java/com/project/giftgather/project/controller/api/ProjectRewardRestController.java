@@ -28,7 +28,6 @@ public class ProjectRewardRestController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReward);
     }
 
-    /*
     // 특정 리워드 조회
     @GetMapping("/{rewardId}")
     public ResponseEntity<ProjectRewardDTO> getReward(@PathVariable String rewardId) {
@@ -36,6 +35,7 @@ public class ProjectRewardRestController {
         return ResponseEntity.ok(rewardDTO);
     }
 
+    /*
     // 프로젝트에 속한 모든 리워드 조회
     @GetMapping("/project/{projectId}")
     public ResponseEntity<List<ProjectRewardDTO>> getRewardsByProject(@PathVariable String projectId) {

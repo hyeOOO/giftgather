@@ -7,7 +7,6 @@ import com.project.giftgather.project.dto.ProjectRewardDTO;
 import com.project.giftgather.project.repository.ProjectRepository;
 import com.project.giftgather.project.repository.ProjectRewardRepository;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
@@ -78,5 +78,51 @@ class ProjectRewardServiceTest {
 
         assertThat(rewardById.getProject().getProjectId()).isEqualTo(projectById.getProjectId());
         assertThat(projectById.getProjectId()).isEqualTo(projectId);
+    }
+
+    @Test
+    void 리워드_조회 () {
+        //given 프로젝트와 리워드 생성
+        ProjectDTO createdProjectDTO = projectService.createProject(); // 프로젝트 생성
+        String projectId = createdProjectDTO.getProjectId(); // 생성된 프로젝트의 ID
+
+        em.flush(); // DB에 반영
+        em.clear(); // 영속성 컨텍스트 초기화
+
+        // 리워드 DTO 생성
+        ProjectRewardDTO rewardDTO = new ProjectRewardDTO();
+        rewardDTO.setDescription("Test Reward Description");
+        rewardDTO.setAmount(new BigDecimal("100.00"));
+        rewardDTO.setQuantity(10);
+        rewardDTO.setDeliveryDate(LocalDateTime.now().plusMonths(1));
+
+        // 리워드 생성
+        ProjectRewardDTO createdReward = projectRewardService.createReward(projectId, rewardDTO);
+        String rewardId = createdReward.getRewardId(); // 생성된 리워드의 ID
+
+        em.flush(); // DB에 반영
+        em.clear(); // 영속성 컨텍스트 초기화
+
+        //when 생성된 리워드를 조회
+        ProjectRewardDTO foundReward = projectRewardService.getReward(rewardId);
+
+        //then 생성한 리워드와 조회된 리워드 비교
+        assertThat(foundReward.getRewardId()).isEqualTo(rewardId);
+        assertThat(foundReward.getDescription()).isEqualTo(rewardDTO.getDescription());
+        assertThat(foundReward.getAmount()).isEqualByComparingTo(rewardDTO.getAmount());
+        assertThat(foundReward.getQuantity()).isEqualTo(rewardDTO.getQuantity());
+        assertThat(foundReward.getDeliveryDate()).isEqualTo(rewardDTO.getDeliveryDate());
+    }
+
+    @Test
+    @Transactional
+    void 존재하지_않는_리워드_조회_예외 () {
+        // Given: 잘못된 리워드 ID를 사용합니다.
+        String invalidRewardId = "invalid-reward-id";
+
+        // When & Then: 존재하지 않는 리워드를 조회하면 예외가 발생해야 합니다.
+        assertThatThrownBy(() -> projectRewardService.getReward(invalidRewardId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("리워드를 찾을 수 없습니다. ID: " + invalidRewardId);
     }
 }
