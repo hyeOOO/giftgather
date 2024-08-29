@@ -44,13 +44,12 @@ public class ProjectRewardService {
         return ProjectRewardDTO.fromEntity(reward);
     }
 
-    /*
     // 프로젝트에 속한 모든 리워드 조회
     @Transactional(readOnly = true)
     public List<ProjectRewardDTO> getRewardsByProject(String projectId) {
-        List<ProjectReward> rewards = projectRewardRepository.findByProjectId(projectId);
+        List<ProjectReward> rewards = projectRewardRepository.findByProjectProjectId(projectId);
         return rewards.stream()
-                .map(this::convertToDTO)
+                .map(ProjectRewardDTO::fromEntity)  // 엔티티를 DTO로 변환하는 정적 메서드 호출
                 .collect(Collectors.toList());
-    }*/
+    }
 }

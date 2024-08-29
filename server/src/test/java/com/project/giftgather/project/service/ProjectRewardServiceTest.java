@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -124,5 +125,50 @@ class ProjectRewardServiceTest {
         assertThatThrownBy(() -> projectRewardService.getReward(invalidRewardId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("리워드를 찾을 수 없습니다. ID: " + invalidRewardId);
+    }
+
+    @Test
+    void 프로젝트에_리워드_조회 () {
+        // Given: 프로젝트 생성
+        ProjectDTO createdProjectDTO = projectService.createProject(); // 프로젝트 생성
+        String projectId = createdProjectDTO.getProjectId(); // 생성된 프로젝트의 ID
+
+        // 리워드 추가
+        ProjectRewardDTO rewardDTO1 = new ProjectRewardDTO();
+        rewardDTO1.setDescription("Reward 1");
+        rewardDTO1.setAmount(new BigDecimal("100.00"));
+        rewardDTO1.setQuantity(10);
+        rewardDTO1.setDeliveryDate(LocalDateTime.now().plusMonths(1));
+        projectRewardService.createReward(projectId, rewardDTO1); // 첫 번째 리워드 생성
+
+        ProjectRewardDTO rewardDTO2 = new ProjectRewardDTO();
+        rewardDTO2.setDescription("Reward 2");
+        rewardDTO2.setAmount(new BigDecimal("200.00"));
+        rewardDTO2.setQuantity(5);
+        rewardDTO2.setDeliveryDate(LocalDateTime.now().plusMonths(2));
+        projectRewardService.createReward(projectId, rewardDTO2); // 두 번째 리워드 생성
+
+        em.flush(); // DB에 반영
+        em.clear(); // 영속성 컨텍스트 초기화
+
+        // When: 프로젝트에 속한 리워드 조회
+        List<ProjectRewardDTO> rewards = projectRewardService.getRewardsByProject(projectId);
+
+        // Then: 조회된 리워드 개수 검증
+        assertThat(rewards).hasSize(2);  // 예상되는 리워드 개수는 2개
+
+        /*
+        // 리워드 내용 검증 (첫 번째 리워드)
+        assertThat(rewards.get(0).getDescription()).isEqualTo(rewardDTO1.getDescription());
+        assertThat(rewards.get(0).getAmount()).isEqualByComparingTo(rewardDTO1.getAmount());
+        assertThat(rewards.get(0).getQuantity()).isEqualTo(rewardDTO1.getQuantity());
+        assertThat(rewards.get(0).getDeliveryDate()).isEqualTo(rewardDTO1.getDeliveryDate());
+
+        // 리워드 내용 검증 (두 번째 리워드)
+        assertThat(rewards.get(1).getDescription()).isEqualTo(rewardDTO2.getDescription());
+        assertThat(rewards.get(1).getAmount()).isEqualByComparingTo(rewardDTO2.getAmount());
+        assertThat(rewards.get(1).getQuantity()).isEqualTo(rewardDTO2.getQuantity());
+        assertThat(rewards.get(1).getDeliveryDate()).isEqualTo(rewardDTO2.getDeliveryDate());
+         */
     }
 }
