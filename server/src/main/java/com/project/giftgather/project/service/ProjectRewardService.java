@@ -5,7 +5,7 @@ import com.project.giftgather.project.domain.ProjectReward;
 import com.project.giftgather.project.dto.ProjectRewardDTO;
 import com.project.giftgather.project.repository.ProjectRepository;
 import com.project.giftgather.project.repository.ProjectRewardRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,13 +37,14 @@ public class ProjectRewardService {
     }
 
     // 특정 리워드 조회
-    /*@Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     public ProjectRewardDTO getReward(String rewardId) {
         ProjectReward reward = projectRewardRepository.findById(rewardId)
                 .orElseThrow(() -> new IllegalArgumentException("리워드를 찾을 수 없습니다. ID: " + rewardId));
-        return convertToDTO(reward);
+        return ProjectRewardDTO.fromEntity(reward);
     }
 
+    /*
     // 프로젝트에 속한 모든 리워드 조회
     @Transactional(readOnly = true)
     public List<ProjectRewardDTO> getRewardsByProject(String projectId) {
