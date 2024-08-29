@@ -35,12 +35,10 @@ public class ProjectRewardRestController {
         return ResponseEntity.ok(rewardDTO);
     }
 
-    /*
     // 프로젝트에 속한 모든 리워드 조회
     @GetMapping("/project/{projectId}")
     public ResponseEntity<List<ProjectRewardDTO>> getRewardsByProject(@PathVariable String projectId) {
         List<ProjectRewardDTO> rewardDTOs = projectRewardService.getRewardsByProject(projectId);
         return ResponseEntity.ok(rewardDTOs);
     }
-     */
 }
