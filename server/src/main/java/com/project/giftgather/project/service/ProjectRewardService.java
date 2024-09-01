@@ -36,6 +36,24 @@ public class ProjectRewardService {
         return ProjectRewardDTO.fromEntity(reward); // 엔티티 -> DTO 변환
     }
 
+    // 특정 리워드 수정
+    @Transactional
+    public void updateReward(String rewardId, ProjectRewardDTO updatedRewardDTO) {
+        // 1. 리워드를 조회하여 영속성 컨텍스트에 올립니다.
+        ProjectReward reward = projectRewardRepository.findById(rewardId)
+                .orElseThrow(() -> new IllegalArgumentException("리워드를 찾을 수 없습니다. ID: " + rewardId));
+
+        // 2. 변경 감지를 위해 엔티티 필드 값을 수정합니다.
+        reward.updateReward(
+                updatedRewardDTO.getDescription(),
+                updatedRewardDTO.getAmount(),
+                updatedRewardDTO.getQuantity(),
+                updatedRewardDTO.getDeliveryDate()
+        );
+
+        // 3. @Transactional에 의해 트랜잭션이 종료될 때 변경 감지가 이루어져 UPDATE 쿼리가 실행됩니다.
+    }
+
     // 특정 리워드 조회
     @Transactional(readOnly = true)
     public ProjectRewardDTO getReward(String rewardId) {

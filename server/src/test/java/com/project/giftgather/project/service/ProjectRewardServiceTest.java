@@ -171,4 +171,53 @@ class ProjectRewardServiceTest {
         assertThat(rewards.get(1).getDeliveryDate()).isEqualTo(rewardDTO2.getDeliveryDate());
          */
     }
+
+    @Test
+    void 리워드_수정_테스트() {
+        // Given: 프로젝트를 생성합니다.
+        ProjectDTO createdProjectDTO = projectService.createProject(); // 프로젝트 생성
+        String projectId = createdProjectDTO.getProjectId(); // 생성된 프로젝트의 ID
+
+        // 프로젝트 엔티티를 조회합니다.
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new AssertionError("프로젝트를 찾을 수 없습니다."));
+
+        // 리워드 DTO 생성
+        ProjectRewardDTO rewardDTO = new ProjectRewardDTO();
+        rewardDTO.setDescription("Initial Reward Description");
+        rewardDTO.setAmount(new BigDecimal("100.00"));
+        rewardDTO.setQuantity(10);
+        rewardDTO.setDeliveryDate(LocalDateTime.now().plusMonths(1));
+
+        // When: 생성된 프로젝트에 대해 리워드를 생성합니다.
+        ProjectRewardDTO createdRewardDTO = projectRewardService.createReward(project.getProjectId(), rewardDTO);
+
+        // 리워드가 DB에 반영되도록 flush 및 clear
+        em.flush();
+        em.clear();
+
+        // Then: 생성된 리워드를 수정합니다.
+        ProjectRewardDTO updatedRewardDTO = new ProjectRewardDTO();
+        updatedRewardDTO.setDescription("Updated Reward Description");
+        updatedRewardDTO.setAmount(new BigDecimal("150.00"));
+        updatedRewardDTO.setQuantity(5);
+        updatedRewardDTO.setDeliveryDate(LocalDateTime.now().plusMonths(2));
+
+        // 리워드 수정 서비스 호출
+        projectRewardService.updateReward(createdRewardDTO.getRewardId(), updatedRewardDTO);
+
+        // 수정된 리워드가 DB에 반영되도록 flush 및 clear
+        em.flush();
+        em.clear();
+
+        // 수정된 리워드를 DB에서 조회하여 검증합니다.
+        ProjectReward updatedReward = projectRewardRepository.findById(createdRewardDTO.getRewardId())
+                .orElseThrow(() -> new AssertionError("리워드를 찾을 수 없습니다."));
+
+        // 필드 검증: 수정된 값이 DB에 반영되었는지 확인
+        assertThat(updatedReward.getDescription()).isEqualTo(updatedRewardDTO.getDescription());
+        assertThat(updatedReward.getAmount()).isEqualByComparingTo(updatedRewardDTO.getAmount());
+        assertThat(updatedReward.getQuantity()).isEqualTo(updatedRewardDTO.getQuantity());
+        assertThat(updatedReward.getDeliveryDate()).isEqualTo(updatedRewardDTO.getDeliveryDate());
+    }
 }

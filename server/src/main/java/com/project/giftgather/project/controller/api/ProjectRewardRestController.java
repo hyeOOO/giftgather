@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/projects/{projectId}/rewards")
+@RequestMapping("/api/project/rewards")
 @RequiredArgsConstructor
 @Tag(name = "ProjectReward", description = "프로젝트 리워드 관련 API")
 public class ProjectRewardRestController {
@@ -26,6 +26,13 @@ public class ProjectRewardRestController {
     public ResponseEntity<ProjectRewardDTO> createReward(@PathVariable String projectId, @RequestBody ProjectRewardDTO rewardDTO) {
         ProjectRewardDTO createdReward = projectRewardService.createReward(projectId, rewardDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReward);
+    }
+
+    // 생성한 리워드 수정
+    @PostMapping("/update/{rewardId}")
+    public ResponseEntity<String> updateReward(@PathVariable String rewardId, @RequestBody ProjectRewardDTO rewardDTO) {
+        projectRewardService.updateReward(rewardId, rewardDTO);
+        return ResponseEntity.ok("리워드가 성공적으로 수정되었습니다.");
     }
 
     // 특정 리워드 조회

@@ -46,4 +46,13 @@ public class ProjectReward {
         reward.updatedAt = LocalDateTime.now();
         return reward;
     }
+
+    //==비즈니스 메서드==//
+    // 리워드 수정 메서드
+    public void updateReward(String description, BigDecimal amount, int quantity, LocalDateTime deliveryDate) {
+        this.description = description;
+        this.amount = amount;
+        this.quantity = quantity;
+        this.deliveryDate = deliveryDate;
+    }
 }
