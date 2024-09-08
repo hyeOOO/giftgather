@@ -42,12 +42,26 @@ public class Maker {
     @JsonIgnore
     private List<Project> projects = new ArrayList<>();
 
-    //==생성 메서드==//
-    public static Maker createMaker(User user) {
+    //== 생성 메서드 ==//
+    public static Maker createMaker(User user, String name, String bio, String profileImage) {
         Maker maker = new Maker();
         maker.makerId = UUID.randomUUID().toString();
-        maker.setUser(user); // User와의 연관 관계 설정
+        maker.user = user;
+        maker.name = name;
+        maker.bio = bio;
+        maker.profileImage = profileImage;
+        maker.createdAt = LocalDateTime.now();
+        maker.updatedAt = LocalDateTime.now();
         return maker;
+    }
+
+    //==비지니스 메서드==//
+    //수정 메소드
+    public void updateMaker(String name, String bio, String profileImage) {
+        this.name = name;
+        this.bio = bio;
+        this.profileImage = profileImage;
+        this.updatedAt = LocalDateTime.now();
     }
 
     //== 연관 관계 메서드 ==//
